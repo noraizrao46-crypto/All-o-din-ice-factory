@@ -1,0 +1,40 @@
+:root {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #172a3a;
+  background: #edf6fa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+  font-weight: 400;
+
+  --ink: #172a3a;
+  --muted: #788591;
+  --line: #dceaf0;
+  --blue: #287e9d;
+  --deep-blue: #123e53;
+  --mint: #e3f2f2;
+}
+
+* { box-sizing: border-box; }
+* { scrollbar-color: #69a9c1 #d9edf4; scrollbar-width: thin; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { border-radius: 8px; background: #d9edf4; }
+*::-webkit-scrollbar-thumb { border: 2px solid #d9edf4; border-radius: 8px; background: linear-gradient(135deg, #70b6cc, #438eae); }
+*::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #4a9dbb, #287895); }
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background: #edf6fa;
+}
+
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid #79b8d6;
+  outline-offset: 3px;
+}
+
+::selection { color: white; background: #2778a9; }
