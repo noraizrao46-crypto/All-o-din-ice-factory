@@ -69,7 +69,10 @@ function apiServerPlugin() {
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/All-o-din-ice-factory/',
+
   plugins: [react(), apiServerPlugin()],
+
   server: {
     strictPort: true,
     proxy: {

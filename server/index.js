@@ -8,6 +8,7 @@ import { DatabaseSync } from 'node:sqlite'
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const port = Number(process.env.PORT || 3001)
 const isProduction = process.env.NODE_ENV === 'production'
+const basePath = '/ice-factory-website/'
 const dbPath = resolve(process.env.ICE_FACTORY_DB_PATH || join(root, 'data', 'factory.sqlite'))
 const sessionDuration = 7 * 24 * 60 * 60 * 1000
 const loginAttempts = new Map()
@@ -451,7 +452,9 @@ function sendStatic(response, pathname) {
     json(response, 404, { error: 'Page not found.' })
     return
   }
-  const requestedPath = pathname === '/' ? 'index.html' : decodeURIComponent(pathname).replace(/^\/+/, '')
+  if (pathname === basePath.slice(0, -1)) pathname = basePath
+  const assetPath = pathname.startsWith(basePath) ? pathname.slice(basePath.length) : pathname.replace(/^\/+/, '')
+  const requestedPath = assetPath || 'index.html'
   const file = normalize(join(dist, requestedPath))
   const fileRelative = relative(dist, file)
   if (isAbsolute(fileRelative) || fileRelative === '..' || fileRelative.startsWith(`..${process.platform === 'win32' ? '\\' : '/'}`)) {
