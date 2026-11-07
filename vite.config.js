@@ -12,30 +12,41 @@ function apiServerPlugin() {
 
   return {
     name: 'ice-factory-api',
-    configureServer(server) {
-      async function reloadPageWhenApiIsReady() {
+    async configureServer(server) {
+      async function waitForApiReady(child) {
         let lastError = 'The API did not respond.'
-        for (let attempt = 0; attempt < 30 && !isShuttingDown; attempt += 1) {
+        const deadline = Date.now() + 10000
+        while (Date.now() < deadline && !isShuttingDown) {
+          if (child.exitCode !== null || child.signalCode !== null) {
+            throw new Error(`The API process exited before becoming ready (code ${child.exitCode ?? 'unknown'}).`)
+          }
           try {
             const response = await fetch('http://127.0.0.1:3001/api/status')
-            if (response.ok) {
-              server.ws.send({ type: 'full-reload' })
-              return
-            }
+            if (response.ok) return
             lastError = `The API returned HTTP ${response.status}.`
           } catch (error) {
             lastError = error.message
           }
-          await new Promise((resolveWait) => setTimeout(resolveWait, 100))
+          await new Promise((resolveWait) => setTimeout(resolveWait, 200))
         }
-        if (!isShuttingDown) console.error(`The API restarted, but the page could not be refreshed: ${lastError}`)
+        if (isShuttingDown) throw new Error('The dev server shut down before the API became ready.')
+        throw new Error(`The API did not become ready within 10 seconds: ${lastError}`)
+      }
+
+      async function reloadPageWhenApiIsReady(child) {
+        try {
+          await waitForApiReady(child)
+          if (!isShuttingDown) server.ws.send({ type: 'full-reload' })
+        } catch (error) {
+          if (!isShuttingDown) console.error(`The API restarted, but the page could not be refreshed: ${error.message}`)
+        }
       }
 
       function startApiServer(reloadClient = false) {
         if (isShuttingDown) return
         const child = spawn(process.execPath, [apiPath], { stdio: 'inherit', env: process.env })
         apiProcess = child
-        if (reloadClient) child.once('spawn', () => { reloadPageWhenApiIsReady() })
+        if (reloadClient) child.once('spawn', () => { reloadPageWhenApiIsReady(child) })
         child.on('error', (error) => {
           console.error('Could not start the ice factory API:', error.message)
         })
@@ -63,6 +74,15 @@ function apiServerPlugin() {
           apiProcess.kill()
         }
       })
+      try {
+        await waitForApiReady(apiProcess)
+      } catch (error) {
+        if (apiProcess && apiProcess.exitCode === null && apiProcess.signalCode === null) {
+          apiProcess.kill()
+        }
+        console.error(`Could not start the ice factory API: ${error.message}`)
+        throw error
+      }
     },
   }
 }
