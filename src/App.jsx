@@ -71,7 +71,7 @@ function Header({ page, setPage, authenticated }) {
   return (
     <header className="site-header">
       <a className="brand" href="#" onClick={(event) => { event.preventDefault(); setPage('overview') }} aria-label="All-o-din Ice Factory home">
-        <img className="brand-logo" src="/all-o-din-factory-logo.png" alt="All-o-din Ice Factory — Pure Ice, Cooler Tomorrow" />
+        <img className="brand-logo" src="/all-o-din-factory-logo-optimized.png" alt="All-o-din Ice Factory — Pure Ice, Cooler Tomorrow" />
       </a>
       <nav className="main-nav" aria-label="Main navigation">
         <button className={page === 'overview' ? 'nav-link active' : 'nav-link'} onClick={() => setPage('overview')}>Overview</button>
@@ -205,7 +205,7 @@ function SiteFooter() {
       <div className="footer-main">
         <div className="footer-brand">
           <a className="brand footer-brand-link" href="#" aria-label="All-o-din Ice Factory home">
-            <img className="brand-logo" src="/all-o-din-factory-logo.png" alt="All-o-din Ice Factory — Pure Ice, Cooler Tomorrow" />
+            <img className="brand-logo" src="/all-o-din-factory-logo-optimized.png" alt="All-o-din Ice Factory — Pure Ice, Cooler Tomorrow" />
           </a>
           <p>Dependable ice, made with care for the businesses and people around us.</p>
         </div>
@@ -272,7 +272,7 @@ function AuthPanel({ initialized, onLogin, onSetup, busy }) {
         </form>
         <p className="auth-hint"><Icon name="lock" size={14} /> Private records are only available after sign-in.</p>
       </div>
-      <div className="auth-side"><img className="auth-side-logo" src="/all-o-din-factory-logo.png" alt="All-o-din Ice Factory — Pure Ice, Cooler Tomorrow" /><p className="panel-kicker">ALL-O-DIN ICE FACTORY</p><h2>Everything in<br />its right place.</h2><p>Keep an accurate record of the everyday numbers that keep your factory moving.</p></div>
+      <div className="auth-side"><img className="auth-side-logo" src="/all-o-din-factory-logo-optimized.png" alt="All-o-din Ice Factory — Pure Ice, Cooler Tomorrow" /><p className="panel-kicker">ALL-O-DIN ICE FACTORY</p><h2>Everything in<br />its right place.</h2><p>Keep an accurate record of the everyday numbers that keep your factory moving.</p></div>
     </section>
   )
 }
