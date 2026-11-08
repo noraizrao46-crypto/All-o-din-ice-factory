@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 
 const assetBase = import.meta.env.BASE_URL
+const API_BASE_URL = import.meta.env.VITE_API_URL || ''
+const SESSION_KEY = 'ice_factory_session'
 
 const money = new Intl.NumberFormat('en-PK', {
   style: 'currency',
@@ -30,13 +32,23 @@ const emptySummary = {
 }
 
 async function request(path, options = {}) {
-  const response = await fetch(path, {
-    credentials: 'same-origin',
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+  const token = sessionStorage.getItem(SESSION_KEY)
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
   })
+
   const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(data.error || 'Something went wrong. Please try again.')
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Something went wrong. Please try again.')
+  }
+
   return data
 }
 
@@ -536,8 +548,17 @@ export default function App() {
   async function authenticate(path, username, password) {
     setBusy(true)
     setError('')
+
     try {
-      await request(path, { method: 'POST', body: JSON.stringify({ username, password }) })
+      const data = await request(path, {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      })
+
+      if (data.token) {
+        sessionStorage.setItem(SESSION_KEY, data.token)
+      }
+
       await refreshStatus()
       setPage('admin')
     } finally {
@@ -547,7 +568,12 @@ export default function App() {
 
   async function logout() {
     try {
-      await request('/api/logout', { method: 'POST', body: '{}' })
+      await request('/api/logout', {
+        method: 'POST',
+        body: '{}',
+      })
+
+      sessionStorage.removeItem(SESSION_KEY)
       setAuthenticated(false)
       setPage('overview')
     } catch (requestError) {

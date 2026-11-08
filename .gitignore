@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 data/
+.env
 
 # Editor directories and files
 .vscode/*
@@ -23,3 +24,7 @@ data/
 *.njsproj
 *.sln
 *.sw?
+
+# Local backend backups and logs
+backend-*.txt
+server/index.sqlite-backup.js
