@@ -13,6 +13,11 @@ const loginAttempts = new Map()
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const fbrSandboxToken = process.env.FBR_SANDBOX_TOKEN
+const fbrValidateUrl =
+  'https://gw.fbr.gov.pk/di_data/v1/di/validateinvoicedata_sb'
+const fbrSubmitUrl =
+  'https://gw.fbr.gov.pk/di_data/v1/di/postinvoicedata_sb'
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.')
@@ -294,6 +299,64 @@ async function sendDateRangeSummary(response, startDate, endDate) {
 
 async function handleApi(request, response, url) {
   const { pathname, searchParams } = url
+  if (request.method === 'POST' && pathname === '/api/fbr/validate') {
+    if (!requireSameOrigin(request, response)) return
+    if (!await requireAdmin(request, response)) return
+
+    if (!fbrSandboxToken) {
+      json(response, 503, {
+        error: 'FBR Sandbox token is not configured.',
+      })
+      return
+    }
+
+    const invoiceData = await readBody(request)
+
+    if (
+      !invoiceData ||
+      typeof invoiceData !== 'object' ||
+      Array.isArray(invoiceData)
+    ) {
+      json(response, 400, {
+        error: 'Invalid invoice data.',
+      })
+      return
+    }
+
+    try {
+      const fbrResponse = await fetch(fbrValidateUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${fbrSandboxToken}`,
+        },
+        body: JSON.stringify(invoiceData),
+        signal: AbortSignal.timeout(30000),
+      })
+
+      const responseText = await fbrResponse.text()
+
+      let result
+
+      try {
+        result = JSON.parse(responseText)
+      } catch {
+        result = responseText
+      }
+
+      json(response, fbrResponse.status, {
+  fbrStatus: fbrResponse.status,
+  success: fbrResponse.ok,
+  result,
+})
+    } catch {
+      json(response, 502, {
+        error: 'Could not connect to FBR Sandbox.',
+      })
+    }
+
+    return
+  }
 
   if (request.method === 'GET' && pathname === '/api/status') {
     const { data: admin, error } = await supabase

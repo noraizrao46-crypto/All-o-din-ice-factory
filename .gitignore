@@ -28,3 +28,5 @@ data/
 # Local backend backups and logs
 backend-*.txt
 server/index.sqlite-backup.js
+
+server/index.js.backup
